@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { userHistory } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 
 const Register = ({ authenticateUser }) => {
-    let history = userHistory();
+    let history = useHistory();
     const [userData, setUserData] = useState({
        name: '',
        email: '',
@@ -11,7 +11,7 @@ const Register = ({ authenticateUser }) => {
        passwordConfirm: ''
     });
 
-    const [errorData, setErrorData] = userState({ errors: null });
+    const [errorData, setErrorData] = useState({ errors: null });
     const { name, email, password, passwordConfirm } = userData;
     const { errors } = errorData;
 
