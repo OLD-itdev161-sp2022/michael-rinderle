@@ -127,6 +127,41 @@ app.get('/api/posts/:id',
 });
 
  /**
+   * @route PUT api/posts/:id
+   * @desc Delete a post
+ */
+app.put(
+    '/api/posts/:id',
+    auth, 
+    async (req, res) => {
+        try {
+            const { title, body } = req.body;
+            const post = await Post.findById(req.param.id);
+
+            // Make sure the post was found
+            if(!post) {
+                return res.status(404).json({ msg: 'Post not found' });
+            }
+
+            // Make sure the request user created the post
+            if(post.user.toString() !== res.user.id) {
+                return res.status(401).json({ msg: 'User not authorized' });
+            }
+
+            // Update the post and return 
+            post.title = title || post.title;
+            post.body = body || post.body;
+
+            await post.save();
+
+            res.json(post);
+        } catch(error) {
+            console.error(error);
+            res.status(500).send('Server error');
+        }
+});
+
+ /**
    * @route DELETE api/posts/:id
    * @desc Delete a post
  */
@@ -139,10 +174,17 @@ app.delete(
             
             // Make sure the post was found
             if(!post) {
-                return res.status(400).json({ msg: 'User not authorized' });
+                return res.status(404).json({ msg: 'Page not found' });
+            }
+
+            // Make sure the request user created the post
+            if(post.user.toString() !== req.user.id) {
+                return res.status(401).json({ msg: 'User not authorized'})
             }
 
             await post.remove();
+
+            res.json({ msg: 'Post removed' });
         } catch(error) {
             console.error(error);
             res.status(500).send('Server error');
