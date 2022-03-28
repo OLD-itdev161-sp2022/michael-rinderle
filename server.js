@@ -128,7 +128,7 @@ app.get('/api/posts/:id',
 
  /**
    * @route PUT api/posts/:id
-   * @desc Delete a post
+   * @desc Update a post
  */
 app.put(
     '/api/posts/:id',
@@ -136,7 +136,7 @@ app.put(
     async (req, res) => {
         try {
             const { title, body } = req.body;
-            const post = await Post.findById(req.param.id);
+            const post = await Post.findById(req.params.id);
 
             // Make sure the post was found
             if(!post) {
@@ -144,7 +144,7 @@ app.put(
             }
 
             // Make sure the request user created the post
-            if(post.user.toString() !== res.user.id) {
+            if(post.user.toString() !== req.user.id) {
                 return res.status(401).json({ msg: 'User not authorized' });
             }
 
