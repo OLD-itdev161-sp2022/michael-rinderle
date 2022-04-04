@@ -2,6 +2,8 @@ import './App.css';
 
 import { Link, Route, BrowserRouter as Router, Switch } from 'react-router-dom';
 
+import CreatePost from './components/Post/CreatePost';
+import EditPost from './components/Post/EditPost';
 import Login from './components/Login/Login';
 import Post from './components/Post/Post';
 import PostList from './components/PostList/PostList';
@@ -109,13 +111,38 @@ class App extends React.Component {
         }
     }
 
+    editPost = post => {
+        this.setState({
+            post: post
+        });
+    }
+
+    onPostCreated = post => {
+        const newPosts = [...this.state.posts, post];
+        this.setState({
+            posts: newPosts
+        });
+    }
+
+    onPostUpdated = post => {
+        console.log('updated post: ', post);
+        const newPosts = [...this.state.posts];
+        const index = newPosts.findIndex(p => p._id === post._id);
+
+        newPosts[index] = post;
+
+        this.setState({ 
+            posts: newPosts
+        });
+    }
+
     viewPost = post => {
         console.log(`view ${post.title}`);
         this.setState({ post: post });
     }
 
     render() {
-        let { user, posts, post } = this.state;
+        let { user, posts, post, token } = this.state;
         const authProps = {
             authenticateUser: this.authenticateUser
         }
@@ -129,31 +156,49 @@ class App extends React.Component {
                             <li><Link to="/">Home</Link></li>
                             <li><Link to="/register">Register</Link></li>
                             <li>
-                                { user ?
-                                    <Link to="" onClick={this.logOut}>Login</Link> :
+                                {user ? (
+                                    <Link to="/new-post">New Post</Link>
+                                ) : (
+                                    <Link to="/register">Register</Link>
+                                )}
+                            </li>
+                            <li>
+                                { user ? (
+                                    <Link to="" onClick={this.logOut}>Logout</Link>
+                                ) : (
                                     <Link to="/login">Log in</Link>
-                                }    
+                                )}    
                             </li>                
                         </ul>
                     </header>   
                     <main>
-                        <Route exact path="/">
-                            {user ? (
-                             <React.Fragment>
-                                <div>Hello {user}!</div>
-                                <PostList 
-                                    posts={posts} 
-                                    clickPost={this.viewPost}
-                                    deletePost={this.deletePost} />
-                             </React.Fragment>
-                             ) : (
-                             <React.Fragment>Please Register or Login</React.Fragment>    
-                             )}
-                        </Route>
-                        <Route path="/posts/:postId">
-                            <Post post={post} />
-                        </Route>
                         <Switch>
+                            <Route exact path="/">
+                                {user ? (
+                                <React.Fragment>
+                                    <div>Hello {user}!</div>
+                                    <PostList 
+                                        posts={posts} 
+                                        clickPost={this.viewPost}
+                                        deletePost={this.deletePost} 
+                                        editPost={this.editPost} />
+                                </React.Fragment>
+                                ) : (
+                                <React.Fragment>Please Register or Login</React.Fragment>    
+                                )}
+                            </Route>
+                            <Route path="/posts/:postId">
+                                <Post post={post} />
+                            </Route>
+                            <Route path="/new-post">
+                                <CreatePost token={token} onPostCreated={this.onPostCreated} />
+                            </Route>
+                            <Route path="/edit-post/:postId">
+                                <EditPost 
+                                    token={token}
+                                    post={post}
+                                    onPostUpdated={this.onPostUpdated}/>
+                            </Route>
                             <Route 
                                 exact path="/register" 
                                 render={() => <Register {...authProps} />} />
