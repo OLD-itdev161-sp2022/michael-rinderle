@@ -1,18 +1,18 @@
 import './styles.css';
 
 import React from 'react';
-import Slugify from 'slugify';
+import slugify from 'slugify';
 import { useHistory } from 'react-router-dom';
 
 const PostListItem = props => {
-    const { post, clickPost } = props;
+    const { post, clickPost, deletePost } = props;
     const history = useHistory();
 
     const handleClickPost = post => {
         const slug = slugify(post.title, { lower: true });
 
         clickPost(post);
-        history.push('/post/${slug}');
+        history.push(`/posts/${slug}`);
     }
 
     return (
@@ -20,6 +20,9 @@ const PostListItem = props => {
             <div className="postListItem" onClick={() => handleClickPost(post)}>
                 <h2>{post.title}</h2>
                 <p>{post.body}</p>
+            </div>
+            <div className="postControls">
+                <button onClick={() => deletePost(post)}>Delete</button>
             </div>
         </div>
     );
