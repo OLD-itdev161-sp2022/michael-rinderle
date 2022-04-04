@@ -1,18 +1,25 @@
-import axios from 'axios';
-import logo from './logo.svg';
-import React from 'react';
-import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom';
 import './App.css';
-import Register from './components/Register/Register';
-import Login from './components/Login/Login';
 
+import { Link, Route, BrowserRouter as Router, Switch } from 'react-router-dom';
+
+import Login from './components/Login/Login';
+import Post from './components/Post/Post';
+import PostList from './components/PostList/PostList';
+import React from 'react';
+import Register from './components/Register/Register';
+import axios from 'axios';
 
 class App extends React.Component {
     
     state = {
         posts: [],
+        post: null,
         token: null,
         user: null
+    }
+
+    componentDidMount() {
+        this.authenticateUser();
     }
 
     authenticateUser = () => {
@@ -39,7 +46,8 @@ class App extends React.Component {
                         },
                         () => {
                             this.loadData();
-                        });
+                        }
+                    );
                 })
                 .catch((error) => {
                     localStorage.removeItem('user');
@@ -47,12 +55,6 @@ class App extends React.Component {
                     console.error(`Error logging in ${error}`);
                 });
         }
-    }
-
-    logOut = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        this.setState({ user: null, token: null });
     }
 
     loadData = () => {
@@ -65,8 +67,8 @@ class App extends React.Component {
                 }
             };
             axios
-                .get('http://localhost:5000')
-                .then((response) => {
+                .get('http://localhost:5000/api/posts/', config)
+                .then(response => {
                     this.setState({
                         posts: response.data
                     })
@@ -74,24 +76,26 @@ class App extends React.Component {
                 .catch((error) => {
                     console.error(`Error fetching data: ${error}`);
                 });
-
-
         }
-
-
-
-
     }
 
-    componentDidMount() {
-        this.authenticateUser();
+    logOut = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        this.setState({ user: null, token: null });
+    }
+
+    viewPost = post => {
+        console.log(`view ${post.title}`);
+        this.setState({ post: post });
     }
 
     render() {
-        let { user, posts } = this.state;
+        let { user, posts, post } = this.state;
         const authProps = {
             authenticateUser: this.authenticateUser
         }
+
         return(
             <Router>
                 <div className="App">
@@ -110,22 +114,17 @@ class App extends React.Component {
                     </header>   
                     <main>
                         <Route exact path="/">
-                            {user ? 
+                            {user ? (
                              <React.Fragment>
                                 <div>Hello {user}!</div>
-                                <div>
-                                    {posts.map(post => (
-                                        <div key={post._id}>
-                                            <h1>{post.title}</h1>
-                                            <p>{post.body}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                             </React.Fragment> :
-                             <React.Fragment>
-                                 Please Register or Login
-                             </React.Fragment>    
-                            }
+                                <PostList posts={posts} clickPost={this.viewPost} />
+                             </React.Fragment>
+                             ) : (
+                             <React.Fragment>Please Register or Login</React.Fragment>    
+                             )}
+                        </Route>
+                        <Route path="/posts/:postId">
+                                <Post post={post} />
                         </Route>
                         <Switch>
                             <Route 
