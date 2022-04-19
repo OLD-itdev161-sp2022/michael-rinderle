@@ -1,13 +1,15 @@
-import express from 'express';
-import connectDatabase from './config/db';
 import { check, validationResult } from 'express-validator';
-import cors from 'cors';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import config from 'config';
-import User from './models/User';
+
 import Post from './models/Post';
+import User from './models/User';
 import auth from './middleware/auth';
+import bcrypt from 'bcryptjs';
+import config from 'config';
+import connectDatabase from './config/db';
+import cors from 'cors';
+import express from 'express';
+import jwt from 'jsonwebtoken';
+import path from 'path';
 
 // Initialize express application
 const app = express();
@@ -42,13 +44,7 @@ const returnToken = (user, res) => {
 };
 
 // API endpoints
-/**
-   * @route GET /
-   * @desc Test endpoint
- */
-app.get("/", (req, res) => 
-    res.send("http get request sent to root api endpoint")
-);
+
 
 /**
    * @route GET api/auth
@@ -299,6 +295,17 @@ app.post(
     }
 );
 
+// Serve build files in production
+if(process.env.NODE_ENV !== 'production') {
+    // Set the build folder
+
+    // Route all requests to serve up the build index file
+    // (i.e., [current working directory]/client/build/index.html)
+    app.get('*', (req, res) => {
+        res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
+    });
+}
+
 // Connection listener
-const port = 5000;
+const port = process.env.PORT || 5000;
 app.listen(port, () => console.log(`Express server running on port ${port}`));
